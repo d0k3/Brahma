@@ -8,6 +8,33 @@
 #include "hid.h"
 #include "brahma.h"
 
+extern u32 __ctru_heap_size;
+void __system_initSyscalls(void);
+void __system_allocateHeaps(void);
+void __system_initArgv(void);
+void __appInit(void);
+void (*__system_retAddr)(void);
+Result __sync_init(void);
+
+void  __libctru_init(void (*retAddr)(void))
+{
+     __ctru_heap_size = 24*1024*1024;
+
+    // Store the return address
+    __system_retAddr = envIsHomebrew() ? retAddr : NULL;
+
+    // Initialize the synchronization subsystem
+    __sync_init();
+
+    // Initialize newlib support system calls
+    __system_initSyscalls();
+
+    // Allocate application and linear heaps
+    __system_allocateHeaps();
+
+    // Build argc/argv if present
+    __system_initArgv();
+}
 
 void error_show(const char *format, ...) {
     consoleInit(GFX_BOTTOM, NULL);
