@@ -40,7 +40,7 @@ CFLAGS	:=	-g -Wall -Wextra -O3 -mword-relocations \
 			-fomit-frame-pointer -ffast-math \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DARM_ARCH -w
+CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DARM_ARCH -w
 
 ifdef PAYLOAD_PATH
 	CFLAGS	+=	-DPAYLOAD_PATH=\"$(PAYLOAD_PATH)\"

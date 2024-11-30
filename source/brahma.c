@@ -4,12 +4,14 @@
 #include <string.h>
 #include <malloc.h>
 #include <dirent.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/_default_fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "brahma.h"
 #include "exploitdata.h"
+#include "utils.h"
 #include "libkhax/khax.h"
 
 static u8  *g_ext_arm9_buf;
@@ -37,7 +39,7 @@ u32 brahma_exit (void) {
 /* overwrites two instructions (8 bytes in total) at src_addr
    with code that redirects execution to dst_addr */
 void redirect_codeflow (u32 *dst_addr, u32 *src_addr) {
-	*(src_addr + 1) = dst_addr;
+	*(src_addr + 1) = (u32)dst_addr;
 	*src_addr = ARM_JUMPOUT;
 }
 
@@ -46,7 +48,7 @@ void redirect_codeflow (u32 *dst_addr, u32 *src_addr) {
    returns: 0 on failure, 1 on success */
 s32 get_exploit_data (struct exploit_data *data) {
 	u32 fversion = 0;
-	u8  isN3DS = 0;
+	bool  isN3DS = false;
 	s32 i;
 	s32 result = 0;
 	u32 sysmodel = SYS_MODEL_NONE;
@@ -314,13 +316,13 @@ void exploit_arm9_race_condition (void) {
 		/* patch ARM11 kernel to force it to execute
 		   our code (hook1 and hook2) as soon as a
 		   "firmlaunch" is triggered */ 	
-		redirect_codeflow(g_expdata.va_exc_handler_base_X +
-						  OFFS_EXC_HANDLER_UNUSED,
-						  g_expdata.va_patch_hook1);
+		redirect_codeflow((u32 *)(g_expdata.va_exc_handler_base_X +
+						  OFFS_EXC_HANDLER_UNUSED),
+						  (u32 *)g_expdata.va_patch_hook1);
 
-		redirect_codeflow(PA_EXC_HANDLER_BASE +
-						  OFFS_EXC_HANDLER_UNUSED + 4,
-						  g_expdata.va_patch_hook2);
+		redirect_codeflow((u32 *)(PA_EXC_HANDLER_BASE +
+						  OFFS_EXC_HANDLER_UNUSED + 4),
+						  (u32 *)g_expdata.va_patch_hook2);
 
 		CleanEntireDataCache();
 		dsb();

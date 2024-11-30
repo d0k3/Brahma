@@ -1,4 +1,5 @@
 #include <3ds.h>
+#include <stdio.h>
 
 /* loop until key is pressed */
 u32 wait_key (void) {
